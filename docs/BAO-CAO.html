@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Báo cáo đề tài - Website quảng bá sản phẩm</title>
+<style>
+@page { size: A4; margin: 2.5cm 2cm 2.5cm 3cm; }
+body { max-width: 17cm; margin: 0 auto; color: #111; font: 12pt/1.5 "Times New Roman", serif; }
+h1, h2, h3 { page-break-after: avoid; }
+h1 { font-size: 18pt; text-align: center; }
+h2 { font-size: 16pt; }
+h3 { font-size: 14pt; }
+section:first-child { min-height: 24cm; display: flex; flex-direction: column; justify-content: center; }
+.cover-line { text-align: center; margin: 0.35em 0; }
+.page-break { break-before: page; page-break-before: always; }
+table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+td, th { border: 1px solid #777; padding: 4pt; vertical-align: top; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f4f6; padding: 8pt; font: 9pt Consolas, monospace; }
+blockquote { border-left: 3px solid #9aa; padding-left: 10pt; color: #444; }
+code { font-family: Consolas, monospace; }
+img { max-width: 100%; height: auto; }
+@media print { body { max-width: none; } a { color: inherit; text-decoration: none; } }
+</style>
+</head>
+<body><section class="cover"><h1>BÁO CÁO ĐỀ TÀI</h1>
+<h2>TRIỂN KHAI VÀ QUẢN TRỊ HỆ THỐNG PHẦN MỀM</h2>
+<h3>WEBSITE QUẢNG BÁ SẢN PHẨM WORDPRESS BẰNG DOCKER COMPOSE</h3>
+<p class="cover-line"><strong>Sinh viên thực hiện:</strong> Sùng A Thái  </p>
+<p class="cover-line"><strong>Mã số sinh viên:</strong> DTC245200934  </p>
+<p class="cover-line"><strong>Lớp:</strong> CNTT  </p>
+<p class="cover-line"><strong>Ngành:</strong> CNTT  </p>
+<p class="cover-line"><strong>Giảng viên hướng dẫn:</strong> [GIẢNG VIÊN]  </p>
+<p class="cover-line"><strong>Trường/Khoa:</strong> [TÊN TRƯỜNG - KHOA]  </p>
+<p class="cover-line"><strong>Địa điểm, năm:</strong> Thái Nguyên, 2026</p>
+<blockquote>Trước khi nộp: điền các trường trong ngoặc vuông, chèn ảnh chụp thật vào các vị trí đánh dấu, chạy <code>node .\docs\export-report.js</code>, mở HTML bằng Edge/Chrome và in sang PDF khổ A4. Kiểm tra bản PDF có tối thiểu 10 trang, bìa, mục lục, ảnh và định dạng trước khi nộp.</blockquote>
+</section><section class="page-break">
+<h2>LỜI MỞ ĐẦU</h2>
+<p>Website giới thiệu sản phẩm là một thành phần quan trọng trong hoạt động cung cấp thông tin, tiếp cận khách hàng và trình bày danh mục hàng hóa. Bên cạnh việc xây dựng giao diện, hệ thống triển khai cần có cơ sở dữ liệu ổn định, đường truy cập có kiểm soát, công cụ quản trị và khả năng quan sát khi có lỗi. Đề tài này xây dựng một môi trường hoàn chỉnh cho website quảng bá sản phẩm sử dụng WordPress, MySQL và các công cụ mã nguồn mở.</p>
+<p>Toàn bộ thành phần được khai báo trong Docker Compose để quá trình dựng môi trường có thể lặp lại trên máy cá nhân hoặc máy chủ Linux. Nginx tiếp nhận kết nối web và chuyển tiếp yêu cầu đến WordPress. MySQL lưu trữ nội dung, tài khoản và cấu hình; phpMyAdmin hỗ trợ thao tác quản trị database. Prometheus thu thập số liệu, Grafana hiển thị dashboard, còn Loki và Promtail tập trung log container để truy vấn bằng LogQL.</p>
+<p>Mục tiêu thực hành không chỉ là khởi động được nhiều container mà còn hiểu luồng dữ liệu, ranh giới network, giới hạn của image chính thức và cách xác minh kết quả. Hệ thống áp dụng mật khẩu riêng qua file môi trường, cô lập database khỏi cổng công khai, giới hạn truy cập giao diện quản trị, thêm security headers và giảm quyền cho các tiến trình phù hợp.</p>
+<p><strong>Phạm vi:</strong> phiên bản này phục vụ học tập và demo trong môi trường local. Hệ thống chưa được xem là cấu hình production Internet-facing: cần bổ sung tên miền, TLS tin cậy, backup ngoài máy, kiểm thử tải, giám sát cảnh báo và quy trình cập nhật/khôi phục trước khi đưa vào sử dụng thật.</p>
+<h3>Mục lục</h3>
+<p>1. Tổng quan đề tài và yêu cầu</p>
+<p>2. Thiết kế kiến trúc</p>
+<p>3. Triển khai ứng dụng WordPress và database</p>
+<p>4. Reverse proxy Nginx và security headers</p>
+<p>5. Giám sát Prometheus và Grafana</p>
+<p>6. Tập trung log Loki, Promtail và LogQL</p>
+<p>7. Hardening và phân tích rủi ro</p>
+<p>8. Kiểm thử, kết quả và minh chứng</p>
+<p>9. Quản lý mã nguồn, vận hành và hạn chế</p>
+<p>10. Kết luận</p>
+</section><section class="page-break">
+<h2>1. TỔNG QUAN ĐỀ TÀI VÀ YÊU CẦU</h2>
+<h3>1.1. Mục tiêu</h3>
+<p>Đề tài triển khai website quảng bá sản phẩm bằng WordPress trên nền tảng container. Hệ thống cần đáp ứng các mục tiêu:</p>
+<ul>
+<li>Website có trang chủ giới thiệu và khu vực hiển thị danh sách sản phẩm.</li>
+<li>Dữ liệu nội dung được lưu trong MySQL và có phpMyAdmin để quản trị.</li>
+<li>Nginx làm reverse proxy, thêm các HTTP security headers và chuyển tiếp yêu cầu đến web application.</li>
+<li>Prometheus thu thập số liệu Nginx, database và container; Grafana hiển thị dashboard.</li>
+<li>Promtail gửi Docker logs đến Loki và người quản trị có thể truy vấn log bằng LogQL.</li>
+<li>Mã nguồn, cấu hình và hướng dẫn được tổ chức trong một repository, tránh đưa thông tin bí mật vào lịch sử Git.</li>
+</ul>
+<h3>1.2. Phạm vi chức năng</h3>
+<p>Theme <code>quangba</code> đăng ký loại nội dung <code>san_pham</code>, hỗ trợ tiêu đề, nội dung, trích đoạn và ảnh đại diện. Mỗi sản phẩm có một trường giá VND; trang chủ hiển thị tối đa chín sản phẩm được xuất bản. Người quản trị tạo và cập nhật nội dung từ WordPress Admin. WordPress CLI chạy trong container khởi tạo giúp cài đặt site và kích hoạt theme sau khi database sẵn sàng.</p>
+<p>Các chức năng giám sát tập trung vào trạng thái hạ tầng và dịch vụ. Prometheus lưu time series ngắn hạn; Grafana truy vấn Prometheus và Loki. LogQL cho phép lọc log theo service/container, tìm từ khóa lỗi và đối chiếu sự kiện giữa các dịch vụ.</p>
+<h3>1.3. Công nghệ</h3>
+<table>
+<tr><td>Nhóm</td><td>Công nghệ</td></tr>
+<tr><td>Web/CMS</td><td>WordPress official image, PHP 8.2, Apache</td></tr>
+<tr><td>Database và quản trị</td><td>MySQL 8.4, phpMyAdmin 5.2</td></tr>
+<tr><td>Reverse proxy</td><td>Nginx 1.27</td></tr>
+<tr><td>Metrics</td><td>Prometheus 2.54, Grafana 11.2, cAdvisor, Nginx Exporter, MySQL Exporter</td></tr>
+<tr><td>Log</td><td>Loki 3.1, Promtail 3.1</td></tr>
+<tr><td>Điều phối</td><td>Docker Compose v2</td></tr>
+</table>
+<p>Các image được chọn theo tag phiên bản cụ thể để cấu hình có thể lặp lại; khi triển khai thật cần cập nhật định kỳ, kiểm tra changelog và lập kế hoạch migration/rollback.</p>
+</section><section class="page-break">
+<h2>2. THIẾT KẾ KIẾN TRÚC</h2>
+<h3>2.1. Sơ đồ tổng thể</h3>
+<pre><code>
+flowchart LR
+    U[Trình duyệt] --&gt;|HTTP :80| N[Nginx]
+    N --&gt; W[WordPress + theme quangba]
+    W --&gt; D[(MySQL)]
+    A[Quản trị viên] --&gt;|127.0.0.1:8081| P[phpMyAdmin]
+    P --&gt; D
+    PR[Prometheus] --&gt; NE[Nginx Exporter]
+    PR --&gt; ME[MySQL Exporter]
+    PR --&gt; C[cAdvisor]
+    G[Grafana] --&gt; PR
+    G --&gt; L[Loki]
+    PT[Promtail] --&gt;|Docker logs| L
+    NE --&gt; N
+    ME --&gt; D
+    DS[Docker socket proxy] --&gt; PT
+</code></pre>
+<p><strong>Hình 1.</strong> Sơ đồ logic các dịch vụ. Khi hoàn thiện báo cáo, nên thay hoặc bổ sung bằng sơ đồ xuất từ Mermaid/Draw.io để thể hiện hostname, port và tên network.</p>
+<h3>2.2. Luồng yêu cầu</h3>
+<p>Trình duyệt gửi HTTP tới cổng 80 trên máy chạy Compose. Nginx đặt các header chuyển tiếp (<code>Host</code>, <code>X-Real-IP</code>, <code>X-Forwarded-For</code>, <code>X-Forwarded-Proto</code>) rồi proxy đến dịch vụ <code>wordpress</code> trên network <code>frontend</code>. WordPress dùng tên dịch vụ <code>db</code> để kết nối cổng 3306 qua network <code>backend</code>. Database không publish cổng ra host, do đó client bên ngoài không thể kết nối trực tiếp bằng port mapping.</p>
+<p>phpMyAdmin cũng nằm trong network backend nhưng cổng host được bind tại <code>127.0.0.1:8081</code>. Điều này cho phép thao tác từ máy triển khai mà không mở công cụ quản trị cho toàn mạng. Prometheus kết nối tới exporter qua network <code>observability</code>; các exporter riêng kết nối tới Nginx/MySQL theo network cần thiết.</p>
+<h3>2.3. Network và lưu trữ</h3>
+<p>Compose định nghĩa ba network bridge. <code>frontend</code> cho phép Nginx giao tiếp với WordPress. <code>backend</code> và <code>observability</code> được khai báo nội bộ, không dùng làm lối truy cập từ bên ngoài. Một số exporter được kết nối đồng thời vào network giám sát và network dịch vụ nhằm thu thập số liệu mà không phải mở cổng MySQL.</p>
+<p>Các named volume giữ dữ liệu website, MySQL, Prometheus, Grafana và Loki khi container được thay mới. Cấu hình ứng dụng được bind mount chỉ đọc khi phù hợp. <code>docker compose down</code> không xóa volume; lệnh <code>down -v</code> sẽ xóa dữ liệu và chỉ được sử dụng khi chủ động làm mới môi trường thử nghiệm.</p>
+</section><section class="page-break">
+<h2>3. TRIỂN KHAI WORDPRESS VÀ DATABASE</h2>
+<h3>3.1. Khởi tạo bằng Docker Compose</h3>
+<p>File <code>docker-compose.yml</code> mô tả toàn bộ dịch vụ và điều kiện phụ thuộc. MySQL có health check bằng <code>mysqladmin ping</code>. WordPress đợi database khỏe trước khi khởi động. Container <code>wordpress-setup</code> sử dụng image WordPress CLI, tạo site với thông tin <code>.env</code> và kích hoạt theme. File <code>.env</code> không được quản lý bởi Git; <code>.env.example</code> chỉ ghi tên biến cùng giá trị hướng dẫn.</p>
+<p>Các lệnh triển khai:</p>
+<pre><code>
+.\scripts\new-secrets.ps1
+docker compose config --quiet
+docker compose up -d
+docker compose ps
+docker compose logs -f wordpress-setup
+</code></pre>
+<p>Khi cài đặt thành công, truy cập <code>http://localhost</code>, đăng nhập quản trị tại <code>/wp-admin</code>. Thông tin đăng nhập lấy từ file <code>.env</code> cục bộ, không ghi trong báo cáo được chia sẻ công khai.</p>
+<h3>3.2. Quản lý nội dung sản phẩm</h3>
+<p>Theme tạo menu <strong>Sản phẩm</strong> trong Dashboard. Khi biên tập viên thêm một sản phẩm, họ có thể nhập tiêu đề, mô tả, trích đoạn, ảnh đại diện và giá dạng số. Callback lưu giá kiểm tra nonce, quyền <code>edit_post</code>, trạng thái autosave và loại nội dung trước khi ghi metadata. Dữ liệu đầu ra được escape theo ngữ cảnh HTML.</p>
+<p>Trang chủ truy vấn tối đa chín sản phẩm trạng thái <code>publish</code>; nếu chưa có dữ liệu, giao diện hiển thị hướng dẫn thêm sản phẩm thay vì trang trống. Ảnh đại diện được ưu tiên sử dụng, và phần mô tả được rút gọn cho thẻ sản phẩm. Có thể xác nhận chức năng bằng cách tạo ít nhất ba sản phẩm có ảnh, giá và mô tả khác nhau.</p>
+<h3>3.3. MySQL và phpMyAdmin</h3>
+<p>MySQL tạo database và người dùng ứng dụng theo biến môi trường. WordPress chỉ đăng nhập bằng user ứng dụng; không dùng root trong kết nối web. Người dùng exporter được tạo bởi script init và chỉ nhận các quyền <code>PROCESS</code>, <code>REPLICATION CLIENT</code>, <code>SELECT</code> cần để đọc số liệu. phpMyAdmin dùng hostname nội bộ <code>db</code>, cấm kết nối tới máy chủ tùy ý (<code>PMA_ARBITRARY=0</code>).</p>
+<p>Các biến đổi script khởi tạo MySQL chỉ được chạy khi volume database còn rỗng. Nếu đổi mật khẩu trên <code>.env</code> sau khi database đã khởi tạo, phải cập nhật tài khoản trong MySQL bằng thao tác quản trị tương ứng; thay biến môi trường không tự đổi mật khẩu đã lưu trong database. Sao lưu trước mọi thao tác reset.</p>
+<h3>3.4. Minh chứng cần chèn</h3>
+<p><strong>Hình 2.</strong> Trang chủ có danh sách sản phẩm mẫu: <code>[CHÈN ẢNH CHỤP TRANG WEB TẠI ĐÂY]</code>  </p>
+<p><strong>Hình 3.</strong> WordPress Admin, danh sách sản phẩm và trường giá: <code>[CHÈN ẢNH]</code>  </p>
+<p><strong>Hình 4.</strong> phpMyAdmin hiển thị database và các bảng <code>wp_*</code>: <code>[CHÈN ẢNH]</code></p>
+</section><section class="page-break">
+<h2>4. NGINX REVERSE PROXY VÀ SECURITY HEADERS</h2>
+<h3>4.1. Chức năng proxy</h3>
+<p>Nginx là điểm vào duy nhất được publish ra cổng host 80. Cấu hình <code>nginx/default.conf</code> nhận request ở server web, đặt <code>client_max_body_size</code> phù hợp với ảnh sản phẩm và chuyển tiếp tới <code>http://wordpress:80</code>. Các header chuyển tiếp giúp ứng dụng phía sau nhận biết host và địa chỉ client. Một server nội bộ trên cổng 8080 cung cấp <code>stub_status</code> cho Nginx Exporter; cổng đó không được publish ra host.</p>
+<h3>4.2. Header bảo mật</h3>
+<p>Nginx bổ sung các header:</p>
+<ul>
+<li><code>X-Content-Type-Options: nosniff</code> hạn chế trình duyệt tự suy đoán kiểu nội dung.</li>
+<li><code>X-Frame-Options: SAMEORIGIN</code> hạn chế nhúng trang từ nguồn khác.</li>
+<li><code>Referrer-Policy: strict-origin-when-cross-origin</code> giảm thông tin referrer gửi ra ngoài.</li>
+<li><code>Permissions-Policy</code> tắt các quyền trình duyệt không cần cho website.</li>
+<li><code>server_tokens off</code> tránh hiển thị phiên bản Nginx trong trang lỗi/header.</li>
+</ul>
+<p>Đề tài dùng HTTP kèm security headers để đáp ứng yêu cầu phương án cơ bản. Với môi trường public, cần tên miền, chứng thư TLS đáng tin cậy, redirect HTTP→HTTPS và cấu hình HSTS chỉ sau khi HTTPS hoạt động ổn định. Chứng thư tự ký chỉ phù hợp minh họa; không cung cấp tính xác thực như CA công cộng.</p>
+<h3>4.3. Kiểm tra</h3>
+<pre><code>
+curl.exe -I http://localhost
+docker compose exec nginx nginx -t
+</code></pre>
+<p>Kết quả mong đợi: website trả HTTP thành công hoặc chuyển hướng do WordPress; response có các header bảo mật đã cấu hình. Nếu cổng 80 bận, dừng dịch vụ đang chiếm cổng hoặc thay mapping host trong Compose rồi điều chỉnh URL truy cập.</p>
+<p><strong>Hình 5.</strong> Response headers từ Nginx hoặc DevTools Network: <code>[CHÈN ẢNH CHỤP THẬT]</code></p>
+</section><section class="page-break">
+<h2>5. GIÁM SÁT PROMETHEUS VÀ GRAFANA</h2>
+<h3>5.1. Thu thập metrics</h3>
+<p>Prometheus đọc cấu hình <code>prometheus/prometheus.yml</code>, scrape mỗi 15 giây và lưu dữ liệu tối đa bảy ngày. Các target gồm Prometheus tự giám sát, Nginx Exporter, MySQL Exporter và cAdvisor. Nginx Exporter đọc trang <code>stub_status</code>; MySQL Exporter dùng tài khoản <code>exporter</code>; cAdvisor cung cấp số liệu CPU/bộ nhớ container. Mỗi exporter được giữ trong network nội bộ thay vì publish cổng ra host.</p>
+<p>Mở <code>http://localhost:9090/targets</code> để kiểm tra từng target. Trạng thái <strong>UP</strong> có nghĩa Prometheus kết nối được endpoint và scrape thành công; <strong>DOWN</strong> cần xem cột error, log exporter và kết nối mạng của Compose. <code>up</code> là metric cơ bản để phát hiện target không phản hồi.</p>
+<h3>5.2. Grafana và dashboard</h3>
+<p>Grafana khai báo datasource Prometheus và Loki bằng provisioning file, nên không phải cấu hình thủ công sau mỗi lần dựng. Dashboard <code>WordPress Infrastructure</code> gồm biểu đồ CPU và bộ nhớ container, kết nối Nginx, số thread kết nối MySQL và trạng thái scrape. Dashboard được bind mount read-only; dữ liệu người dùng khác được giữ trong volume Grafana.</p>
+<p>Truy vấn PromQL mẫu:</p>
+<pre><code>
+up
+rate(container_cpu_usage_seconds_total{image!=&quot;&quot;}[5m])
+container_memory_working_set_bytes{image!=&quot;&quot;,name!=&quot;&quot;}
+nginx_connections_active
+mysql_global_status_threads_connected
+</code></pre>
+<p>Đơn vị và nhãn cAdvisor có thể thay đổi theo Docker Engine/OS. Đối chiếu metric có trong giao diện Prometheus trước khi kết luận dashboard không có dữ liệu. Docker Desktop trên Windows chạy Docker Engine trong Linux VM; một vài mount host/cgroup có thể không cung cấp cùng mức chi tiết như Linux native.</p>
+<h3>5.3. Minh chứng</h3>
+<p><strong>Hình 6.</strong> Prometheus Targets có các job <code>nginx</code>, <code>mysql</code>, <code>containers</code> ở trạng thái UP: <code>[CHÈN ẢNH]</code>  </p>
+<p><strong>Hình 7.</strong> Dashboard Grafana WordPress Infrastructure có biểu đồ metrics: <code>[CHÈN ẢNH]</code></p>
+</section><section class="page-break">
+<h2>6. TẬP TRUNG LOG LOKI, PROMTAIL VÀ LOGQL</h2>
+<h3>6.1. Luồng log</h3>
+<p>Các container ghi log theo cơ chế Docker. Promtail sử dụng Docker service discovery qua <code>docker-socket-proxy</code>, sau đó đọc file JSON log của container và gửi batch tới Loki. Socket proxy chỉ bật một số API đọc cần thiết như container/events/info và cấu hình <code>POST=0</code>; Promtail không mount trực tiếp Docker socket. Các nhãn service/container được dùng để giới hạn phạm vi truy vấn.</p>
+<p>Loki chạy chế độ đơn tiến trình với filesystem storage và retention 168 giờ. Dữ liệu log được lưu trong volume <code>loki_data</code>. Đây là thiết kế phù hợp lab một máy, không phải kiến trúc chịu lỗi cho cụm production. Cấu hình loại trừ log Loki, Promtail và socket proxy để tránh vòng lặp log nội bộ.</p>
+<h3>6.2. Truy vấn LogQL minh họa</h3>
+<p>Mở Grafana, vào <strong>Explore</strong>, chọn datasource <strong>Loki</strong>, sau đó chạy ít nhất ba truy vấn:</p>
+<pre><code>
+{service=&quot;nginx&quot;}
+{service=&quot;wordpress&quot;} |= &quot;error&quot;
+{container=~&quot;.*mysql.*&quot;} |~ &quot;(?i)(error|warning)&quot;
+</code></pre>
+<p>Truy vấn đầu lọc toàn bộ log Nginx theo nhãn service. Truy vấn thứ hai tìm dòng WordPress có chuỗi <code>error</code>. Truy vấn thứ ba dùng biểu thức chính quy không phân biệt hoa thường để tìm lỗi/cảnh báo của container có tên chứa <code>mysql</code>. Nhãn có sẵn tùy thuộc label Docker Compose; Label browser giúp xác nhận <code>service</code> và <code>container</code> thực tế trước khi lọc.</p>
+<p>Để kiểm chứng pipeline, tải trang chủ vài lần, đăng nhập quản trị hoặc tạo request lỗi có chủ đích trong môi trường lab; sau đó điều chỉnh khoảng thời gian Explore và xác nhận các dòng log xuất hiện. Không tạo lỗi trên hệ thống thật chỉ để lấy ảnh minh họa.</p>
+<h3>6.3. Minh chứng</h3>
+<p><strong>Hình 8.</strong> Grafana Explore chạy LogQL lọc Nginx: <code>[CHÈN ẢNH]</code>  </p>
+<p><strong>Hình 9.</strong> Truy vấn log lỗi WordPress/MySQL và kết quả: <code>[CHÈN ẢNH]</code></p>
+</section><section class="page-break">
+<h2>7. HARDENING VÀ PHÂN TÍCH RỦI RO</h2>
+<h3>7.1. Biện pháp đã áp dụng</h3>
+<p>1. <strong>Cô lập mạng:</strong> database nằm trong backend network, không publish cổng; network backend và observability đặt internal. Service chỉ kết nối vào network cần thiết.</p>
+<p>2. <strong>Mật khẩu:</strong> biến bí mật lưu trong <code>.env</code> cục bộ, <code>.env</code> nằm trong <code>.gitignore</code>; các user WordPress, MySQL exporter và Grafana tách biệt. Sinh mật khẩu dài, ngẫu nhiên và không tái sử dụng.</p>
+<p>3. <strong>Giới hạn quyền truy cập:</strong> phpMyAdmin, Grafana và Prometheus chỉ bind loopback. Grafana tắt anonymous access và đăng ký tự do. phpMyAdmin không cho chọn arbitrary server.</p>
+<p>4. <strong>Nginx:</strong> security headers, tắt lộ phiên bản, read-only root filesystem, bỏ capability mặc định và chỉ thêm capability cần bind cổng 80.</p>
+<p>5. <strong>Container:</strong> <code>no-new-privileges</code> bật cho các dịch vụ; một số container có memory limit. Theme mount chỉ đọc và WordPress tắt chỉnh sửa file qua Dashboard.</p>
+<p>6. <strong>Least privilege database:</strong> WordPress đăng nhập bằng user ứng dụng, exporter bằng user metric hạn chế, không dùng tài khoản root cho truy vấn website.</p>
+<p>7. <strong>Docker API:</strong> Promtail sử dụng socket proxy giới hạn endpoint đọc thay vì mount Docker socket trực tiếp.</p>
+<h3>7.2. Trade-off và giới hạn</h3>
+<p>Các image WordPress/MySQL chính thức có entrypoint cần thiết để chuẩn bị file, kiểm tra biến môi trường và thay đổi quyền dữ liệu. Ép cả container chạy user tùy ý có thể làm hỏng khởi tạo volume. Vì vậy không khai báo <code>user:</code> cho hai image này; Apache worker chạy bằng <code>www-data</code>, còn MySQL hạ quyền cho daemon sau giai đoạn khởi động. Cần kiểm tra tiến trình thực tế bằng <code>docker compose top</code>.</p>
+<p>cAdvisor cần quan sát metadata của Docker host và được mount một số đường dẫn hệ thống read-only. Docker socket proxy vẫn là thành phần nhạy cảm: cấu hình đọc giới hạn rủi ro nhưng không tương đương loại bỏ quyền truy cập Docker API. Không publish proxy này ra host và cần xem lại endpoint bật khi nâng cấp.</p>
+<h3>7.3. Việc cần làm trước production</h3>
+<p>Bổ sung TLS với certificate hợp lệ; chặn/giới hạn truy cập <code>/wp-admin</code> và phpMyAdmin bằng VPN, allowlist hoặc xác thực nhiều lớp; đặt reverse proxy sau firewall; bật backup và kiểm tra restore; cập nhật image có kiểm soát; quản lý secret bằng secret manager; thiết lập alert; bật audit và theo dõi dung lượng log; chạy đánh giá bảo mật theo cấu hình thực tế. Không coi mật khẩu trong <code>.env</code> là hệ thống quản lý secret hoàn chỉnh.</p>
+<p><strong>Hình 10.</strong> Bằng chứng cổng bind/network/service: <code>[CHÈN ẢNH docker compose ps VÀ docker network inspect]</code></p>
+</section><section class="page-break">
+<h2>8. KIỂM THỬ, KẾT QUẢ VÀ MINH CHỨNG</h2>
+<h3>8.1. Danh sách kiểm thử</h3>
+<table>
+<tr><td>Mã</td><td>Kiểm tra</td><td>Lệnh/thao tác</td><td>Kết quả mong đợi</td></tr>
+<tr><td>T01</td><td>Cấu hình hợp lệ</td><td><code>docker compose config --quiet</code></td><td>Exit code 0</td></tr>
+<tr><td>T02</td><td>Container khởi động</td><td><code>docker compose ps</code></td><td>Service chính chạy; setup kết thúc</td></tr>
+<tr><td>T03</td><td>Website</td><td>Mở <code>http://localhost</code></td><td>Trang chủ WordPress hiển thị</td></tr>
+<tr><td>T04</td><td>Nội dung</td><td>Tạo sản phẩm trong Admin</td><td>Sản phẩm, ảnh và giá hiển thị</td></tr>
+<tr><td>T05</td><td>DB tool</td><td>Mở <code>http://localhost:8081</code></td><td>Đăng nhập và xem bảng WordPress</td></tr>
+<tr><td>T06</td><td>Proxy/header</td><td><code>curl.exe -I http://localhost</code></td><td>Header Nginx có mặt</td></tr>
+<tr><td>T07</td><td>Metrics</td><td>Prometheus <code>/targets</code></td><td>Exporter cần thiết ở trạng thái UP</td></tr>
+<tr><td>T08</td><td>Dashboard</td><td>Grafana dashboard</td><td>Có panel và dữ liệu metric</td></tr>
+<tr><td>T09</td><td>LogQL</td><td>Grafana Explore</td><td>Truy vấn trả về log container</td></tr>
+<tr><td>T10</td><td>Phân quyền cổng</td><td>Xem <code>docker compose ps</code></td><td>MySQL/Loki/exporter không publish host port</td></tr>
+<tr><td>T11</td><td>Bảo mật secret</td><td><code>git check-ignore .env</code></td><td><code>.env</code> bị ignore</td></tr>
+</table>
+<h3>8.2. Biên bản chạy thực tế</h3>
+<p>Điền sau khi hoàn thành demo; không đánh dấu đạt nếu chưa thực hiện:</p>
+<table>
+<tr><td>Hạng mục</td><td>Kết quả thực tế</td><td>Bằng chứng</td></tr>
+<tr><td>Compose config</td><td>[Đạt/Không đạt, ngày giờ]</td><td>[Ảnh/log]</td></tr>
+<tr><td>Website + sản phẩm</td><td>[Đạt/Không đạt]</td><td>[Hình 2, 3]</td></tr>
+<tr><td>phpMyAdmin</td><td>[Đạt/Không đạt]</td><td>[Hình 4]</td></tr>
+<tr><td>Nginx headers</td><td>[Đạt/Không đạt]</td><td>[Hình 5]</td></tr>
+<tr><td>Prometheus/Grafana</td><td>[Đạt/Không đạt]</td><td>[Hình 6, 7]</td></tr>
+<tr><td>Loki/LogQL</td><td>[Đạt/Không đạt]</td><td>[Hình 8, 9]</td></tr>
+<tr><td>Hardening</td><td>[Đạt/Không đạt]</td><td>[Hình 10]</td></tr>
+</table>
+<h3>8.3. Đánh giá</h3>
+<p>Kiến trúc có thể dựng bằng một lệnh Compose và phân tách rõ ứng dụng, lưu trữ, reverse proxy, metrics và logs. Provisioning Grafana loại bỏ thao tác cấu hình data source thủ công. Theme minh họa đúng bài toán quảng bá sản phẩm thay vì chỉ hiển thị trang WordPress mặc định. Các kiểm thử trên cần được chạy trên máy demo thực tế vì kết quả về cAdvisor và Docker log path phụ thuộc nền tảng.</p>
+</section><section class="page-break">
+<h2>9. QUẢN LÝ MÃ NGUỒN VÀ VẬN HÀNH</h2>
+<h3>9.1. Cấu trúc repository</h3>
+<pre><code>
+.
+|-- docker-compose.yml
+|-- .env.example
+|-- nginx/default.conf
+|-- mysql/init/02-create-exporter-user.sh
+|-- prometheus/prometheus.yml
+|-- grafana/dashboards/wordpress-stack.json
+|-- grafana/provisioning/
+|-- loki/config.yml
+|-- promtail/config.yml
+|-- wordpress/themes/quangba/
+|-- docs/BAO-CAO.md
+`-- README.md
+</code></pre>
+<p>Sinh viên tạo repository công khai/riêng tư theo yêu cầu lớp học, đặt tên theo mã số sinh viên (ví dụ <code>MSSV-wordpress-monitoring</code>) và đẩy source/cấu hình. Repository ban đầu không có Git remote; cần tạo tài khoản GitHub và repository cá nhân, cấu hình remote trước khi push.</p>
+<p>Ba mốc commit gợi ý theo yêu cầu rubric:</p>
+<p>1. <code>feat: deploy WordPress behind hardened Nginx with MySQL</code> — ứng dụng, MySQL/phpMyAdmin, Nginx, cấu hình nền.</p>
+<p>2. <code>feat: add Prometheus and Grafana monitoring</code> — Prometheus, exporters, dashboard và provisioning Grafana.</p>
+<p>3. <code>feat: add Loki Promtail centralized logging</code> — Loki, Promtail, socket proxy, truy vấn và hướng dẫn log.</p>
+<p>Không đưa <code>.env</code>, mật khẩu, dữ liệu người dùng, backup database hoặc private key vào commit. Kiểm tra <code>git status</code> và <code>git check-ignore .env</code> trước mỗi lần push.</p>
+<h3>9.2. Vận hành và sao lưu</h3>
+<ul>
+<li>Khởi động: <code>docker compose up -d</code></li>
+<li>Xem trạng thái: <code>docker compose ps</code></li>
+<li>Xem log: <code>docker compose logs --tail=100 &lt;service&gt;</code></li>
+<li>Dừng nhưng giữ dữ liệu: <code>docker compose down</code></li>
+<li>Cập nhật image: <code>docker compose pull</code> rồi <code>docker compose up -d</code></li>
+<li>Sao lưu: dump MySQL và lập lịch backup riêng cho volume quan trọng.</li>
+</ul>
+<p>Backup cần được lưu ngoài máy triển khai và mã hóa khi phù hợp. Thử khôi phục vào một môi trường riêng để chứng minh backup sử dụng được. Thay đổi cấu hình và image nên được ghi lại trong Git với commit message mô tả rõ nội dung.</p>
+<h3>9.3. Demo trên lớp</h3>
+<p>1. Mở website và giới thiệu một sản phẩm có ảnh/giá.</p>
+<p>2. Mở phpMyAdmin, chỉ ra database WordPress và giải thích kết nối nội bộ.</p>
+<p>3. Mở Prometheus Targets và Grafana dashboard.</p>
+<p>4. Chuyển Grafana Explore, chạy ít nhất hai LogQL query.</p>
+<p>5. Chỉ ra network/port mapping, header Nginx, file <code>.env</code> bị ignore và user exporter hạn chế quyền.</p>
+<p>6. Giải thích giới hạn của HTTPS tự ký, Docker socket proxy và cAdvisor trên Docker Desktop.</p>
+</section><section class="page-break">
+<h2>10. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN</h2>
+<p>Đề tài đã thiết kế một nền tảng triển khai WordPress quảng bá sản phẩm có database và công cụ quản trị, reverse proxy Nginx, giám sát bằng Prometheus/Grafana và tập trung log bằng Loki/Promtail. Các dịch vụ được mô tả bằng Docker Compose, cấu hình được tổ chức theo từng thành phần và dashboard được provision tự động. Theme WordPress tạo giao diện danh mục và quy trình quản trị sản phẩm với metadata giá.</p>
+<p>Qua quá trình triển khai, có thể thấy một ứng dụng web cần được đánh giá cả về chức năng lẫn vận hành. Health check và dependency order giúp quá trình khởi tạo có trật tự; exporter cho phép đo tình trạng web/database; log tập trung hỗ trợ tìm lỗi; network và port mapping giới hạn bề mặt truy cập. Việc dùng mật khẩu từ <code>.env</code> giúp không ghi bí mật vào source, nhưng vẫn cần cơ chế quản lý secret phù hợp khi triển khai thật.</p>
+<p>Hạn chế hiện tại gồm chưa có TLS CA hợp lệ, chưa có alert rule, chưa có backup tự động, logging/metrics chỉ lưu cục bộ và khả năng quan sát cAdvisor phụ thuộc Docker host. Website chưa được thiết kế tải cao hay triển khai nhiều node. Những điểm này được ghi nhận để tránh nhầm lẫn giữa demo học tập và hệ thống production.</p>
+<p>Hướng phát triển gồm bổ sung HTTPS qua Let's Encrypt, bảo vệ trang quản trị bằng VPN/allowlist, xây dựng cảnh báo dung lượng/uptime, kiểm thử phục hồi MySQL, triển khai backup định kỳ, thêm CI kiểm tra Compose/theme và lưu trữ metrics/log có độ bền cao hơn. Khi bổ sung, cần kiểm thử tương thích phiên bản và ghi nhận thay đổi bằng commit có ý nghĩa.</p>
+<h3>Tài liệu tham khảo</h3>
+<p>1. Docker Compose documentation, https://docs.docker.com/compose/</p>
+<p>2. WordPress Docker Official Image, https://hub.docker.com/_/wordpress</p>
+<p>3. MySQL Docker Official Image, https://hub.docker.com/_/mysql</p>
+<p>4. Nginx documentation, https://nginx.org/en/docs/</p>
+<p>5. Prometheus documentation, https://prometheus.io/docs/</p>
+<p>6. Grafana provisioning documentation, https://grafana.com/docs/grafana/latest/administration/provisioning/</p>
+<p>7. Loki and LogQL documentation, https://grafana.com/docs/loki/latest/</p>
+<h3>Danh sách hình cần hoàn thiện</h3>
+<table>
+<tr><td>Hình</td><td>Nội dung</td><td>Trạng thái</td></tr>
+<tr><td>1</td><td>Sơ đồ kiến trúc</td><td>[Bổ sung ảnh xuất sơ đồ]</td></tr>
+<tr><td>2</td><td>Website có sản phẩm</td><td>[Chụp từ trình duyệt]</td></tr>
+<tr><td>3</td><td>Quản lý sản phẩm WordPress</td><td>[Chụp từ Dashboard]</td></tr>
+<tr><td>4</td><td>Database trên phpMyAdmin</td><td>[Chụp từ phpMyAdmin]</td></tr>
+<tr><td>5</td><td>Header phản hồi Nginx</td><td>[Chụp DevTools/terminal]</td></tr>
+<tr><td>6</td><td>Prometheus Targets</td><td>[Chụp giao diện Prometheus]</td></tr>
+<tr><td>7</td><td>Dashboard Grafana</td><td>[Chụp dashboard]</td></tr>
+<tr><td>8</td><td>LogQL truy vấn Nginx</td><td>[Chụp Grafana Explore]</td></tr>
+<tr><td>9</td><td>LogQL tìm lỗi</td><td>[Chụp Grafana Explore]</td></tr>
+<tr><td>10</td><td>Trạng thái container/network</td><td>[Chụp terminal]</td></tr>
+</table>
+</section></body></html>
