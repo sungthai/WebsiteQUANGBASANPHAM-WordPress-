@@ -28,7 +28,7 @@ flowchart LR
 
 | Yêu cầu | Phần đã chuẩn bị | Việc còn cần xác nhận |
 |---|---|---|
-| Source, cấu hình, README, GitHub và 3 commit | Mã nguồn, Compose, cấu hình dịch vụ và README có trong thư mục | Tạo GitHub account/repository theo MSSV, push và tạo 3 commit |
+| Source, cấu hình, README, GitHub và 3 commit | Đã push lên repository; có 3 commit theo mốc yêu cầu và 1 commit dọn file tạm | Không commit `.env`; tiếp tục cập nhật repo nếu thay đổi cấu hình |
 | WordPress + MySQL + phpMyAdmin | Theme sản phẩm, DB, phpMyAdmin và quy trình setup đã cấu hình | Khởi chạy Docker, tạo sản phẩm và chụp ảnh kết quả |
 | Nginx reverse proxy | Nginx proxy và security headers đã cấu hình | Xác nhận website/header trên máy đang chạy |
 | Prometheus + Grafana | Exporters, cấu hình scrape và dashboard provision sẵn | Xác nhận Targets UP và dashboard có dữ liệu |
@@ -36,7 +36,7 @@ flowchart LR
 | Hardening | Network cô lập, secret, hạn chế port/quyền và security headers đã cấu hình | Kiểm tra runtime và trình bày ảnh minh chứng |
 | Báo cáo tối thiểu 10 trang | Bản thảo Markdown và HTML để in PDF | Điền thông tin sinh viên, chèn ảnh thật, in PDF và kiểm tra số trang |
 
-**Lưu ý trạng thái:** đây là các cấu hình đã chuẩn bị, không phải bằng chứng rằng dịch vụ đã chạy. Docker Engine hiện cần khởi động thành công và phải xác nhận bằng `docker compose ps`, giao diện web, Prometheus Targets và Grafana Explore.
+**Lưu ý trạng thái:** mã nguồn đã được push, nhưng chưa có bằng chứng các dịch vụ đã chạy. Docker Desktop hiện lưu dữ liệu tại `C:\ProgramData\DockerDesktop\vm-data`, ổ C còn khoảng 0,33 GB và Docker Engine không phản hồi. Sau khi chuyển Disk image location sang ổ D, phải xác nhận bằng `docker version`, `docker compose ps`, giao diện web, Prometheus Targets và Grafana Explore.
 
 ## Yêu cầu
 
@@ -140,19 +140,20 @@ docker compose exec -T db sh -c 'exec mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" 
 
 ## GitHub và ba mốc commit
 
-Repository theo thông tin sinh viên: [sungthai/WebsiteQUANGBASANPHAM-WordPress-](https://github.com/sungthai/WebsiteQUANGBASANPHAM-WordPress-). Sau khi xác nhận repository rỗng hoặc đã sao lưu nội dung hiện có, cấu hình remote và chia thay đổi thành ba mốc:
+Repository theo thông tin sinh viên: [sungthai/WebsiteQUANGBASANPHAM-WordPress-](https://github.com/sungthai/WebsiteQUANGBASANPHAM-WordPress-). Ba mốc yêu cầu đã được commit và push lên nhánh `main`; lịch sử có thêm một commit dọn file Office tạm:
 
-1. `feat: deploy WordPress behind hardened Nginx with MySQL`
+1. `feat: deploy WordPress with MySQL and hardened Nginx`
 2. `feat: add Prometheus and Grafana monitoring`
-3. `feat: add Loki Promtail centralized logging`
-
-Không push đè lên nhánh đã có lịch sử mà chưa kiểm tra. Các commit chỉ được tạo sau khi xác nhận danh tính Git author và lịch sử remote. Kiểm tra trước khi push:
+3. `feat: add Loki Promtail centralized logging and project report`
 
 ```powershell
 git status
+git --no-pager log -4 --oneline
 git check-ignore .env
 docker compose config --quiet
 ```
+
+Không commit `.env`, thông tin đăng nhập, database dump, certificate/private key.
 
 Không commit `.env`, thông tin đăng nhập, database dump, certificate/private key.
 

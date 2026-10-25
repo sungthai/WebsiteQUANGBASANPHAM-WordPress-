@@ -326,15 +326,15 @@ Kiến trúc có thể dựng bằng một lệnh Compose và phân tách rõ �
 `-- README.md
 ```
 
-Sinh viên tạo repository công khai/riêng tư theo yêu cầu lớp học, đặt tên theo mã số sinh viên (ví dụ `MSSV-wordpress-monitoring`) và đẩy source/cấu hình. Repository ban đầu không có Git remote; cần tạo tài khoản GitHub và repository cá nhân, cấu hình remote trước khi push.
+Repository GitHub cá nhân đã được tạo theo tài khoản sinh viên tại [sungthai/WebsiteQUANGBASANPHAM-WordPress-](https://github.com/sungthai/WebsiteQUANGBASANPHAM-WordPress-). Source và cấu hình được đẩy lên nhánh `main`; không đưa `.env`, mật khẩu, database dump hoặc private key vào lịch sử Git.
 
-Ba mốc commit gợi ý theo yêu cầu rubric:
+Ba commit nội dung theo các mốc yêu cầu:
 
-1. `feat: deploy WordPress behind hardened Nginx with MySQL` — ứng dụng, MySQL/phpMyAdmin, Nginx, cấu hình nền.
+1. `feat: deploy WordPress with MySQL and hardened Nginx` — ứng dụng, MySQL/phpMyAdmin, Nginx, cấu hình nền.
 2. `feat: add Prometheus and Grafana monitoring` — Prometheus, exporters, dashboard và provisioning Grafana.
-3. `feat: add Loki Promtail centralized logging` — Loki, Promtail, socket proxy, truy vấn và hướng dẫn log.
+3. `feat: add Loki Promtail centralized logging and project report` — Loki, Promtail, socket proxy, truy vấn và hướng dẫn log.
 
-Không đưa `.env`, mật khẩu, dữ liệu người dùng, backup database hoặc private key vào commit. Kiểm tra `git status` và `git check-ignore .env` trước mỗi lần push.
+Sau ba commit nội dung có một commit nhỏ xóa file khóa tạm của Office. Kiểm tra `git status` và `git check-ignore .env` trước mỗi lần push; không đưa mật khẩu, dữ liệu người dùng, backup database hoặc private key vào repository.
 
 ### 9.2. Vận hành và sao lưu
 

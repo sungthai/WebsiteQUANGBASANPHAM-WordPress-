@@ -249,12 +249,12 @@ mysql_global_status_threads_connected
 |-- docs/BAO-CAO.md
 `-- README.md
 </code></pre>
-<p>Sinh viên tạo repository công khai/riêng tư theo yêu cầu lớp học, đặt tên theo mã số sinh viên (ví dụ <code>MSSV-wordpress-monitoring</code>) và đẩy source/cấu hình. Repository ban đầu không có Git remote; cần tạo tài khoản GitHub và repository cá nhân, cấu hình remote trước khi push.</p>
-<p>Ba mốc commit gợi ý theo yêu cầu rubric:</p>
-<p>1. <code>feat: deploy WordPress behind hardened Nginx with MySQL</code> — ứng dụng, MySQL/phpMyAdmin, Nginx, cấu hình nền.</p>
+<p>Repository GitHub cá nhân đã được tạo theo tài khoản sinh viên tại <a href="https://github.com/sungthai/WebsiteQUANGBASANPHAM-WordPress-">sungthai/WebsiteQUANGBASANPHAM-WordPress-</a>. Source và cấu hình được đẩy lên nhánh <code>main</code>; không đưa <code>.env</code>, mật khẩu, database dump hoặc private key vào lịch sử Git.</p>
+<p>Ba commit nội dung theo các mốc yêu cầu:</p>
+<p>1. <code>feat: deploy WordPress with MySQL and hardened Nginx</code> — ứng dụng, MySQL/phpMyAdmin, Nginx, cấu hình nền.</p>
 <p>2. <code>feat: add Prometheus and Grafana monitoring</code> — Prometheus, exporters, dashboard và provisioning Grafana.</p>
-<p>3. <code>feat: add Loki Promtail centralized logging</code> — Loki, Promtail, socket proxy, truy vấn và hướng dẫn log.</p>
-<p>Không đưa <code>.env</code>, mật khẩu, dữ liệu người dùng, backup database hoặc private key vào commit. Kiểm tra <code>git status</code> và <code>git check-ignore .env</code> trước mỗi lần push.</p>
+<p>3. <code>feat: add Loki Promtail centralized logging and project report</code> — Loki, Promtail, socket proxy, truy vấn và hướng dẫn log.</p>
+<p>Sau ba commit nội dung có một commit nhỏ xóa file khóa tạm của Office. Kiểm tra <code>git status</code> và <code>git check-ignore .env</code> trước mỗi lần push; không đưa mật khẩu, dữ liệu người dùng, backup database hoặc private key vào repository.</p>
 <h3>9.2. Vận hành và sao lưu</h3>
 <ul>
 <li>Khởi động: <code>docker compose up -d</code></li>
